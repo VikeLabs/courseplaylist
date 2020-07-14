@@ -1,0 +1,65 @@
+<html>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <button onclick="authenticate().then(loadClient)">authorize and load</button>
+    <button onclick="execute()">execute</button>
+    <input type="text" id="linkToVideo" name="Video Search"><br>
+        <div class="row" id="video-container"></div>
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  /**
+   * Sample JavaScript code for youtube.playlistItems.list
+   * See instructions for running APIs Explorer code samples locally:
+   * https://developers.google.com/explorer-help/guides/code_samples#javascript
+   */
+   const videoContainer = document.getElementById('video-container');
+
+
+  function authenticate() {
+    return gapi.auth2.getAuthInstance()
+        .signIn({scope: "https://www.googleapis.com/auth/youtube.readonly"})
+        .then(function() { console.log("Sign-in successful"); },
+              function(err) { console.error("Error signing in", err); });
+  }
+  function loadClient() {
+    gapi.client.setApiKey("AIzaSyARgFCxtow0MW7c7G9cccbFFZyKSG-qRak");
+    return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+        .then(function() { console.log("GAPI client loaded for API"); },
+              function(err) { console.error("Error loading GAPI client for API", err); });
+  }
+  // Make sure the client is loaded and sign-in is complete before calling this method.
+  function execute() {
+    return gapi.client.youtube.playlistItems.list({
+        "part": [
+        "snippet,contentDetails"
+      ],
+      "maxResults": 20,
+      "playlistId": "PLRdD1c6QbAqJn0606RlOR6T3yUqFWKwmX"
+
+    })
+        .then(function(response) {
+                // Handle the results here (response.result has the parsed body).
+                console.log("Response", response);
+                const playlistItems = response.result.items;
+                let output = '<br><h4 class="center-align">Playlist Videos</h4>';
+                let VideoLink = document.getElementById("linkToVideo").value
+                    output += `
+                    <div class="col s3">
+                    <iframe width="100%" height="auto" src="https://www.youtube.com/embed/${VideoLink}" frameborder="1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    `;
+                    
+               
+                videoContainer.innerHTML = output;
+              },
+              function(err) { console.error("Execute error", err); });
+  }
+  gapi.load("client:auth2", function() {
+    gapi.auth2.init({client_id: "809970311729-o14l2b7njlmt92fcnp1ai2k2u0c4mdkq.apps.googleusercontent.com"});
+  });
+</script>
+
+
+
+</html>
